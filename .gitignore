@@ -162,5 +162,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# NimGL
+*.xml
 
 # End of https://www.gitignore.io/api/c,nim,osx,c++,linux,macos,windows,visualstudiocode

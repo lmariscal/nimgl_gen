@@ -16,7 +16,7 @@ Check if this bug has already been reported in the [Issues](https://github.com/l
 
 We heavily appreciate pull requests, feel free to make any pull request but also feel free to discuss it beforehand to avoid rejecting your work.
 
-If you have more than 3 commits please rebase to squash some of them down. If you don't know how to squash [here](https://youtu.be/2E23I9PzplM) is a tutorial. Also follow the [Nim Styleguide](https://nim-lang.org/docs/nep1.html), except the 80 characters limit.
+If you have more than 3 commits please rebase to squash some of them down. If you don't know how to squash [here](https://youtu.be/2E23I9PzplM) is a tutorial. Also follow the [Nim Styleguide](https://nim-lang.org/docs/nep1.html), except the 80 characters limit and the whitespace for better code readability, almost all editors have extensions to automatically align code.
 
 ### Instructions
 

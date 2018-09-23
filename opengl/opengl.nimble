@@ -9,4 +9,7 @@ bin           = @["opengl"]
 
 # Dependencies
 
-requires "nim >= 0.18.0"
+requires "nim >= 0.18.0", "figures"
+
+task bake, "build the generator":
+  exec "nim c -r -d:ssl src/opengl.nim"
