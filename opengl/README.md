@@ -1,3 +1,0 @@
-## OpenGL Generator
-
-TODO
