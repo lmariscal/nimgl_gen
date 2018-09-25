@@ -164,5 +164,6 @@ $RECYCLE.BIN/
 
 # NimGL
 *.xml
+refpages
 
 # End of https://www.gitignore.io/api/c,nim,osx,c++,linux,macos,windows,visualstudiocode

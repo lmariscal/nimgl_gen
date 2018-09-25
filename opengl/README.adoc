@@ -1,3 +1,18 @@
 == OpenGL Generator
 
-TODO
+This generator makes the opengl bindings with their respective wrapper and documentation grabbed from the https://github.com/KhronosGroup/OpenGL-Refpages[official ref-pages]. By default it uses the proc loader from the nimgl glfw bindings, so if you want to use the output directly withpout nimgl you will have to tweak it.
+
+To use it:
+
+* Clone this repo
+* `cd` to this dir
+* Either clone or download the zip the https://github.com/KhronosGroup/OpenGL-Refpages[official ref-pages]
+* Rename the downloaded repo to `refpages`
+* Run `nimble bake`
+* A `gl.nim` has been generated
+* Modify and Enjoy!
+
+=== To Contribute
+Feel free to improve the documentation, and how the loading is made follow the link:../CONTRIBUTING.adoc[Contributing] guide to know how to contribute.
+
+If any extension is missing feel free to either open a Pull Request or open an Issue with all the details.
