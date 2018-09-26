@@ -2,7 +2,7 @@
 
 This generator makes the opengl bindings with their respective wrapper and documentation grabbed from the https://github.com/KhronosGroup/OpenGL-Refpages[official ref-pages]. By default it uses the proc loader from the nimgl glfw bindings, so if you want to use the output directly withpout nimgl you will have to tweak it.
 
-To use it:
+=== To use it
 
 * Clone this repo
 * `cd` to this dir
