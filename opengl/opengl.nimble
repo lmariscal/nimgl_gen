@@ -1,11 +1,11 @@
 # Package
 
-version       = "0.1.0"
-author        = "Leonardo Mariscal"
-description   = "opengl bindings generator"
-license       = "MIT"
-srcDir        = "src"
-bin           = @["opengl"]
+version     = "0.1.0"
+author      = "Leonardo Mariscal"
+description = "opengl bindings generator"
+license     = "MIT"
+srcDir      = "src"
+bin         = @["opengl"]
 
 # Dependencies
 
