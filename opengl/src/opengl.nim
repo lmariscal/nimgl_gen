@@ -98,7 +98,7 @@ const
 proc glGetProcAddress(name: cstring): pointer =
   ## Gets a pointer to the procedure
   ## If `release` is not defined it will check that the address has been found.
-  result = cglGetProcAddress(name)
+  cglGetProcAddress(name)
   """
   footer = """
 
