@@ -35,7 +35,7 @@ else:
     compile: "private/cimgui/imgui/imgui_draw.cpp",
     compile: "private/cimgui/imgui/imgui_demo.cpp",
     compile: "private/cimgui/imgui/imgui_widgets.cpp",
-    compile: "private/cimgui/cimgui/cimgui_auto.cpp".}
+    compile: "private/cimgui/cimgui/cimgui.cpp".}
   {.pragma: imgui_lib, cdecl.}
 
 """
@@ -44,6 +44,10 @@ else:
     key*: ImGuiID
     val*: int32
   ImDrawListSharedData* = object
+  ImGuiContext* = object
+  igGLFWwindow* = object
+  igSDL_Window* = object
+  igSDL_Event* = object
 """
 
 # Enums
@@ -56,11 +60,35 @@ proc translateTypes(dtype: string, name: string): tuple[dtype: string, name: str
   result.dtype = result.dtype.replace("const ", "")
   result.dtype = result.dtype.replace("const", "")
 
+  if result.dtype == "((void *)0)":
+    result.dtype = "nil"
+
   if result.dtype.find("/*") != -1:
     result.dtype = result.dtype[0..<result.dtype.find("/*")]
 
   var ptrcount = result.dtype.count('*')
   result.dtype = result.dtype.replace("*", "")
+  result.dtype = result.dtype.replace("&", "")
+
+  if result.dtype.contains("[]"):
+    ptrcount.inc
+    result.dtype = result.dtype.replace("[]", "")
+
+  if result.name == "type":
+    result.name = "`type`"
+  elif result.name == "ref":
+    result.name = "`ref`"
+  elif result.name == "ptr":
+    result.name = "`ptr`"
+  elif result.name == "out":
+    result.name = "`out`"
+  elif result.name == "in":
+    result.name = "`in`"
+  elif result.name == "char":
+    result.name = "`char`"
+
+  if result.name.startsWith("_"):
+    result.name = result.name[1..<result.name.len]
 
   if result.dtype == "float":
     result.dtype = "float32"
@@ -83,6 +111,22 @@ proc translateTypes(dtype: string, name: string): tuple[dtype: string, name: str
     result.dtype = "uint16"
   elif result.dtype == "unsigned char":
     result.dtype = "char"
+  elif result.dtype == "size_t":
+    result.dtype = "uint32"
+  elif result.dtype == "NULL":
+    result.dtype = "nil"
+
+  if result.dtype.contains("GLFWwindow"):
+    result.dtype = "igGLFWwindow"
+  elif result.dtype.contains("SDL_Window"):
+    result.dtype = "igSDL_Window"
+  elif result.dtype.contains("SDL_Event"):
+    result.dtype = "igSDL_Event"
+
+  if result.dtype.startsWith("ImVector"):
+    result.dtype = "ImVector"
+  if result.dtype == "FLT_MAX":
+    result.dtype = "high(float32)"
 
   if result.dtype.startsWith("char()"):
     return ("proc(user_data: pointer): cstring {.cdecl.}", name)
@@ -109,6 +153,13 @@ proc translateTypes(dtype: string, name: string): tuple[dtype: string, name: str
     var num = result.name[result.name.find("[") + 1 ..< result.name.find("]")]
     result.dtype = "array[" & num & ", " & result.dtype & "]"
     result.name = result.name[0..<result.name.find("[")]
+  elif result.dtype.find("[") != -1:
+    var num = result.dtype[result.dtype.find("[") + 1 ..< result.dtype.find("]")]
+    result.dtype = "ptr " & result.dtype[0..<result.dtype.find("[")]
+
+  if result.dtype.endsWith(" "):
+    result.dtype = result.dtype[0 ..< result.dtype.len - 1]
+  result.dtype = result.dtype.replace("ptr void", "pointer")
 
 proc getConstants(node: JsonNode): string =
   result = "const\n"
@@ -127,7 +178,6 @@ proc getTypes(node: JsonNode): string =
     if obj.getStr().startsWith("struct "): continue
     let dtype = obj.getStr().translateTypes(name).dtype
     if dtype.contains("value_type") or name.contains("value_type"): continue
-
     result.add("  " & name & "* = " & dtype & "\n")
 
 proc getStructs(node: JsonNode): string =
@@ -148,16 +198,71 @@ proc getStructs(node: JsonNode): string =
       result.add(name & "*: ")
       result.add(dtype & "\n")
 
+proc getDefinitions(node: JsonNode, impls: bool = false): string =
+  result = "\n"
+  var vararg = false
+  for name, obj in node:
+    if name == "igSetAllocatorFunctions": continue # need to add all the functions
+    var pname = name
+    if pname.startsWith("Im") and pname.contains("_"):
+      pname = pname[pname.find("_") + 1 ..< pname.len]
+      if pname.startsWith("Im") and not impls:
+        pname = "new" & pname
+    pname[0] = pname[0].toLowerAscii()
+    if pname == "end":
+      pname = "igEnd"
+    result.add("proc " & pname & "*(")
+    var args = false
+    for data in obj[0]["argsT"]:
+      args = true
+      let tipe = translateTypes(data["type"].getStr(), data["name"].getStr())
+      if tipe.name == "...":
+        vararg = true
+        continue
+      elif tipe.dtype == "va_list":
+        vararg = true
+        continue
+      result.add(tipe.name & ": " & tipe.dtype)
+      if obj[0]["defaults"].kind == JObject and obj[0]["defaults"].hasKey(tipe.name):
+        var defVal = translateTypes(obj[0]["defaults"][tipe.name].getStr(), "").dtype
+        if defVal.contains("("):
+          result.add(", ")
+        else:
+          if defVal == "0xFFFFFFFF":
+            defVal = "0xFFFFFFF"
+          result.add(" = " & defVal & ", ")
+      else:
+        result.add(", ")
+    if args:
+      result = result[0 ..< result.len - 2]
+
+    var ret = "void"
+    if obj[0].hasKey("ret"):
+      ret = translateTypes(obj[0]["ret"].getStr(), "").dtype
+    result.add("): " & ret & " {.imgui_lib, importc: \"" & obj[0]["cimguiname"].getStr())
+    if not vararg:
+      result.add("\".}\n")
+    else:
+      result.add("\", varargs.}\n")
+
 proc main() =
+
   let structs_and_enums = readFile("structs_and_enums.json")
-  let typedefs = readFile("typedefs_dict.json")
-  let json_td = parseJson(typedefs)
-  let json_sne = parseJson(structs_and_enums)
+  let typedefs          = readFile("typedefs_dict.json")
+  let definitions       = readFile("definitions.json")
+  let impl_definitions  = readFile("impl_definitions.json")
+  let json_td   = parseJson(typedefs)
+  let json_sne  = parseJson(structs_and_enums)
+  let json_defs = parseJson(definitions)
+  let json_impl_defs = parseJson(impl_definitions)
   var out_data = ""
   out_data.add(header)
   out_data.add(getConstants(json_sne))
   out_data.add(getTypes(json_td))
   out_data.add(getStructs(json_sne))
+  out_data.add(getDefinitions(json_defs))
+  out_data.add("\n# Implementations @TODO Make our own\n")
+  out_data.add(getDefinitions(json_impl_defs, true))
   writeFile("imgui.nim", out_data)
 
 main()
