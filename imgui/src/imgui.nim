@@ -213,7 +213,10 @@ proc getDefinitions(node: JsonNode, impls: bool = false): string =
       pname = "igEnd"
     result.add("proc " & pname & "*(")
     var args = false
+    var argCount = 0
+
     for data in obj[0]["argsT"]:
+      argCount.inc
       args = true
       let tipe = translateTypes(data["type"].getStr(), data["name"].getStr())
       if tipe.name == "...":
@@ -240,7 +243,7 @@ proc getDefinitions(node: JsonNode, impls: bool = false): string =
     if obj[0].hasKey("ret"):
       ret = translateTypes(obj[0]["ret"].getStr(), "").dtype
     result.add("): " & ret & " {.imgui_lib, importc: \"" & obj[0]["cimguiname"].getStr())
-    if not vararg:
+    if not vararg or argCount == 0:
       result.add("\".}\n")
     else:
       result.add("\", varargs.}\n")
@@ -261,8 +264,8 @@ proc main() =
   out_data.add(getTypes(json_td))
   out_data.add(getStructs(json_sne))
   out_data.add(getDefinitions(json_defs))
-  out_data.add("\n# Implementations @TODO Make our own\n")
-  out_data.add(getDefinitions(json_impl_defs, true))
+  # out_data.add("\n# Implementations @TODO Make our own\n")
+  # out_data.add(getDefinitions(json_impl_defs, true))
   writeFile("imgui.nim", out_data)
 
 main()
