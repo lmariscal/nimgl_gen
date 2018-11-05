@@ -43,6 +43,10 @@ else:
   Pair* = object
     key*: ImGuiID
     val*: int32
+  ImVector* = object
+    size*: int32
+    capacity*: int32
+    data*: pointer
   ImDrawListSharedData* = object
   ImGuiContext* = object
   igGLFWwindow* = object
@@ -183,6 +187,7 @@ proc getTypes(node: JsonNode): string =
 proc getStructs(node: JsonNode): string =
   result = "\n" & dtypes_header
   for name, obj in node["structs"].pairs:
+    if name == "ImVector": continue
     if name == "Pair": continue
     result.add("  " & name & "* = object\n")
     if obj.len < 0: continue
