@@ -66,6 +66,14 @@ else:
 """
   dtypes_header = """
   carray* {.unchecked.}[T] = array[0..0, T]
+  ImDrawData* {.importc: "ImDrawData", header: "<cimgui.h>".} = object
+    valid* {.importc: "Valid".} : bool
+    cmdLists* {.importc: "CmdLists".} : carray[ptr ImDrawList]
+    cmdListsCount* {.importc: "CmdListsCount".} : int32
+    totalIdxCount* {.importc: "TotalIdxCount".} : int32
+    totalVtxCount* {.importc: "TotalVtxCount".} : int32
+    displayPos* {.importc: "DisplayPos".} : ImVec2
+    displaySize* {.importc: "DisplaySize".} : ImVec2
   Pair* {.importc: "Pair", header: "<cimgui.h>".} = object
     key*: ImGuiID
     val*: int32
@@ -285,6 +293,7 @@ proc getStructs(node: JsonNode): string =
   for iname, obj in node["structs"].pairs:
     if iname == "ImVector": continue
     if iname == "Pair": continue
+    if iname == "ImDrawData": continue
     result.add("  " & iname & "* {.importc: \"" & iname & "\", header: \"<cimgui.h>\".} = object\n")
     if obj.len < 0: continue
     for data in obj:
