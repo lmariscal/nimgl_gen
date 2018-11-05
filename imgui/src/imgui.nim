@@ -40,6 +40,12 @@ const
 ## HACK: If you are on windows be sure to compile the cimgui dll with visual studio and
 ## not with mingw.
 
+import strutils
+
+proc currentSourceDir(): string =
+  result = currentSourcePath()
+  result = result[0 ..< result.rfind("/")]
+
 when not defined(imguiSrc):
   when defined(windows):
     const imgui_dll* = "cimgui.dll"
@@ -47,6 +53,7 @@ when not defined(imguiSrc):
     const imgui_dll* = "cimgui.dylib"
   else:
     const imgui_dll* = "cimgui.so"
+  {.passC: "-I" & currentSourceDir() & "/private/cimgui".}
   {.pragma: imgui_lib, dynlib: imgui_dll, cdecl.}
 else:
   {.compile: "private/cimgui/imgui/imgui.cpp",
@@ -58,15 +65,88 @@ else:
 
 """
   dtypes_header = """
-  Pair* = object
+  carray* {.unchecked.}[T] = array[0..0, T]
+  Pair* {.importc: "Pair", header: "<cimgui.h>".} = object
     key*: ImGuiID
     val*: int32
-  ImVector* = object
-    size*: int32
-    capacity*: int32
-    data*: pointer
-  ImDrawListSharedData* = object
-  ImGuiContext* = object
+  ImVector* {.importc: "ImVector", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[pointer]
+  ImVector_float* {.importc: "ImVector_float", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[float32]
+  ImVector_ImWchar* {.importc: "ImVector_ImWchar", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImWchar]
+  ImVector_ImFontConfig* {.importc: "ImVector_ImFontConfig", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImFontConfig]
+  ImVector_ImFontGlyph* {.importc: "ImVector_ImFontGlyph", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImFontGlyph]
+  ImVector_unsigned_char* {.importc: "ImVector_unsigned_char", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[cuchar]
+  ImVector_Pair* {.importc: "ImVector_Pair", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[Pair]
+  ImVector_CustomRect* {.importc: "ImVector_CustomRect", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[CustomRect]
+  ImVector_ImDrawChannel* {.importc: "ImVector_ImDrawChannel", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImDrawChannel]
+  ImVector_char* {.importc: "ImVector_char", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[char]
+  ImVector_ImTextureID* {.importc: "ImVector_ImTextureID", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImTextureID]
+  ImVector_unsigned_short* {.importc: "ImVector_unsigned_short", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[cushort]
+  ImVector_ImDrawVert* {.importc: "ImVector_ImDrawVert", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImDrawVert]
+  ImVector_ImDrawCmd* {.importc: "ImVector_ImDrawCmd", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImDrawCmd]
+  ImVector_TextRange* {.importc: "ImVector_TextRange", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[TextRange]
+  ImVector_ImVec4* {.importc: "ImVector_ImVec4", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImVec4]
+  ImVector_ImDrawIdx* {.importc: "ImVector_ImDrawIdx", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImDrawIdx]
+  ImVector_ImVec2* {.importc: "ImVector_ImVec2", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ImVec2]
+  ImVector_ImFontPtr* {.importc: "ImVector_ImFontPtr", header: "<cimgui.h>".} = object
+    size* {.importc: "Size".}: int32
+    capacity* {.importc: "Capacity".}: int32
+    data* {.importc: "Data".}: carray[ptr ImFont]
+  ImDrawListSharedData* {.importc: "ImDrawListSharedData", header: "<cimgui.h>".} = object
+  ImGuiContext* {.importc: "ImGuiContext", header: "<cimgui.h>".} = object
   igGLFWwindow* = object
   igSDL_Window* = object
   igSDL_Event* = object
@@ -145,8 +225,6 @@ proc translateTypes(dtype: string, name: string): tuple[dtype: string, name: str
   elif result.dtype.contains("SDL_Event"):
     result.dtype = "igSDL_Event"
 
-  if result.dtype.startsWith("ImVector"):
-    result.dtype = "ImVector"
   if result.dtype == "FLT_MAX":
     result.dtype = "high(float32)"
 
@@ -204,10 +282,10 @@ proc getTypes(node: JsonNode): string =
 
 proc getStructs(node: JsonNode): string =
   result = "\n" & dtypes_header
-  for name, obj in node["structs"].pairs:
-    if name == "ImVector": continue
-    if name == "Pair": continue
-    result.add("  " & name & "* = object\n")
+  for iname, obj in node["structs"].pairs:
+    if iname == "ImVector": continue
+    if iname == "Pair": continue
+    result.add("  " & iname & "* {.importc: \"" & iname & "\", header: \"<cimgui.h>\".} = object\n")
     if obj.len < 0: continue
     for data in obj:
       var (dtype, name) = data["type"].getStr().translateTypes(data["name"].getStr())
@@ -218,7 +296,10 @@ proc getStructs(node: JsonNode): string =
       name[0] = name[0].toLowerAscii
 
       result.add("    ")
-      result.add(name & "*: ")
+      var importcv = data["name"].getStr()
+      if importcv.contains("["):
+        importcv = importcv[0 ..< importcv.find("[")]
+      result.add(name & "* {.importc: \"" & importcv & "\".} : ")
       result.add(dtype & "\n")
 
 proc getDefinitions(node: JsonNode, impls: bool = false): string =
