@@ -155,7 +155,7 @@ proc glInit*(loader: GLPROCLOADERPROC = getProcAddress): bool =
               "proc", "ptr", "raise", "ref", "return", "shl", "shr", "static", "template", "try", "tuple", "type",
               "using", "var", "when", "while", "xor", "yield"]
   usedConstants = ["GL_BYTE", "GL_SHORT", "GL_INT", "GL_FLOAT", "GL_DOUBLE", "GL_FIXED"]
-  bannedConstants = ["GL_INVALID_INDEX", "GL_TIMEOUT_IGNORED", "GL_TIMEOUT_IGNORED_APPLE", "GL_ACTIVE_PROGRAM_EXT"]
+  bannedConstants = ["GL_INVALID_INDEX", "GL_TIMEOUT_IGNORED", "GL_TIMEOUT_IGNORED_APPLE", "GL_ACTIVE_PROGRAM_EXT", "GL_NEXT_BUFFER_NV", "GL_SKIP_COMPONENTS4_NV", "GL_SKIP_COMPONENTS3_NV", "GL_SKIP_COMPONENTS2_NV", "GL_SKIP_COMPONENTS1_NV"]
   banned = ["glCreateSyncFromCLeventARB", "glGetTransformFeedbacki_v"]
 
 var
@@ -434,7 +434,7 @@ proc main() =
   # opengl consts
   for e in xml.findAll("enums"):
     for i in e.findAll("enum"):
-      if i.attr("name") == nil or i.attr("value") == "" or bannedConstants.contains(i.attr("name")): continue
+      if i.attr("name") == "" or i.attr("value") == "" or bannedConstants.contains(i.attr("name")): continue
 
       var enumv: EnumVal
       enumv.name = i.attr("name")

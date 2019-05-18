@@ -1,0 +1,3 @@
+== ImGUI Generator
+
+This generator has been moved to https://github.com/zacharycarter/nimgui[zacharycarter/nimgui].
