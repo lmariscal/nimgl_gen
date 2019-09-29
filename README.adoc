@@ -5,3 +5,5 @@ fully automate the process of mantaining and updating this libraries, at the sam
 this bindings to give the developer the best experience at the moment of development.
 
 Each generator will have it's readme with proper instructions on how to use it and generate proper bindings.
+
+## This has been discontinued. All new generators will be done in their respective submodule under the NimGL's group.
